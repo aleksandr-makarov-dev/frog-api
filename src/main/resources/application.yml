@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: frog
+  jpa:
+    show-sql: true
+  datasource:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
