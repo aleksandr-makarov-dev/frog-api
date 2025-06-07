@@ -1,6 +1,7 @@
 package com.github.frog.features.tasks.entity;
 
 import com.github.frog.entity.BaseEntity;
+import com.github.frog.features.users.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,4 +37,13 @@ public class TaskEntity extends BaseEntity {
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
     private List<AssigneeEntity> assignees = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "created_by", nullable = false, updatable = false)
+    UserEntity createdBy;
+
+    public void addAssignee(AssigneeEntity entity) {
+        assignees.add(entity);
+        entity.setTask(this);
+    }
 }

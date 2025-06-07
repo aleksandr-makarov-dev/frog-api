@@ -12,11 +12,12 @@ import java.time.LocalDateTime;
 public class AssigneeMapper {
 
     public AssigneeEntity toAssigneeEntity(TaskEntity task, UserEntity user) {
-        return AssigneeEntity.builder()
-                .task(task)
-                .user(user)
-                .assignedAt(LocalDateTime.now())
-                .build();
+        AssigneeEntity assignee = new AssigneeEntity();
+        assignee.setAssignedAt(LocalDateTime.now());
+        task.addAssignee(assignee);
+        user.addAssignee(assignee);
+
+        return assignee;
     }
 
     public AssigneeResponse toAssigneeResponse(AssigneeEntity entity) {

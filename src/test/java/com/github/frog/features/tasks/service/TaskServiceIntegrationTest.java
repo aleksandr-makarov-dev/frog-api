@@ -8,6 +8,9 @@ import com.github.frog.features.tasks.dto.TaskUpdateRequest;
 import com.github.frog.features.tasks.entity.TaskEntity;
 import com.github.frog.features.tasks.exception.TaskNotFoundException;
 import com.github.frog.features.tasks.repository.TaskRepository;
+import com.github.frog.features.users.UserTestData;
+import com.github.frog.features.users.entity.UserEntity;
+import com.github.frog.features.users.repository.UserRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -41,6 +44,11 @@ class TaskServiceIntegrationTest {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private UserEntity testUser;
+
     @BeforeAll
     static void beforeAll() {
         postgreSQLContainer.start();
@@ -54,13 +62,16 @@ class TaskServiceIntegrationTest {
     @BeforeEach
     void beforeEach() {
         taskRepository.deleteAll();
+        userRepository.deleteAll();
+
+        testUser = userRepository.save(UserTestData.mockUserEntity());
     }
 
     @Test
     @DisplayName("Given a valid task creation request, when createTask is called, then it should return the created task details")
     public void givenValidTaskCreateRequest_whenCreateTask_thenReturnCreatedTaskDetails() {
         // given
-        TaskCreateRequest request = TaskTestData.mockTaskCreateRequest();
+        TaskCreateRequest request = TaskTestData.mockTaskCreateRequest(testUser.getId());
 
         // when
         TaskDetailsResponse response = taskService.createTask(request);
@@ -78,7 +89,7 @@ class TaskServiceIntegrationTest {
     @DisplayName("Given task entity list, when getAllTasks is called, then it should return list of task summaries")
     public void givenTaskEntityList_whenGetAllTasks_thenReturnTaskSummaryResponseList() {
         // given
-        List<TaskEntity> taskList = TaskTestData.mockTaskEntityList();
+        List<TaskEntity> taskList = TaskTestData.mockTaskEntityList(testUser);
         taskRepository.saveAll(taskList);
 
         // then
@@ -93,9 +104,9 @@ class TaskServiceIntegrationTest {
     @DisplayName("Given valid task id and task update request, when updateTaskById is called, then it should return update task details")
     public void givenValidIdAndTaskUpdateRequest_whenUpdateTaskById_thenReturnTaskDetailsResponse() {
         // given
-        taskRepository.saveAll(TaskTestData.mockTaskEntityList());
+        TaskEntity savedTask = taskRepository.save(TaskTestData.mockTaskEntity(testUser));
 
-        Long taskId = 1L;
+        Long taskId = savedTask.getId();
         TaskUpdateRequest request = TaskTestData.mockTaskUpdateRequest();
 
         // when
@@ -114,7 +125,7 @@ class TaskServiceIntegrationTest {
     @DisplayName("Given invalid task id and valid task update request, when updateTaskById is called, then it should throw TaskNotFoundException")
     public void givenInValidIdAndValidTaskUpdateRequest_whenUpdateTaskById_thenThrowTaskNotFoundException() {
         // given
-        taskRepository.saveAll(TaskTestData.mockTaskEntityList());
+        taskRepository.saveAll(TaskTestData.mockTaskEntityList(testUser));
 
         Long taskId = 999L;
         TaskUpdateRequest request = TaskTestData.mockTaskUpdateRequest();
@@ -132,7 +143,7 @@ class TaskServiceIntegrationTest {
     @DisplayName("Given valid task id, when getTaskById is called, then it should return task details")
     public void givenValidTaskId_whenGetTaskById_thenReturnTaskDetailsResponse() {
         // given
-        List<TaskEntity> savedTasks = taskRepository.saveAll(TaskTestData.mockTaskEntityList());
+        List<TaskEntity> savedTasks = taskRepository.saveAll(TaskTestData.mockTaskEntityList(testUser));
         Long taskId = savedTasks.get(0).getId();
 
         // when
@@ -147,7 +158,7 @@ class TaskServiceIntegrationTest {
     @DisplayName("Given invalid task id, when getTaskById is called, then it should throw TaskNotFoundException")
     public void givenInvalidTaskId_whenGetTaskById_thenThrowTaskNotFoundException() {
         // given
-        taskRepository.saveAll(TaskTestData.mockTaskEntityList());
+        taskRepository.saveAll(TaskTestData.mockTaskEntityList(testUser));
         Long taskId = 999L;
 
         // when
@@ -163,7 +174,7 @@ class TaskServiceIntegrationTest {
     @DisplayName("Given valid task id, when deleteTaskById is called, then it should not throw TaskNotFoundException")
     public void givenValidTaskId_whenDeleteTaskById_thenNotThrowTaskNotFoundException() {
         // given
-        List<TaskEntity> savedTasks = taskRepository.saveAll(TaskTestData.mockTaskEntityList());
+        List<TaskEntity> savedTasks = taskRepository.saveAll(TaskTestData.mockTaskEntityList(testUser));
         Long taskId = savedTasks.get(0).getId();
 
         // when
@@ -177,7 +188,7 @@ class TaskServiceIntegrationTest {
     @DisplayName("Given invalid task id, when deleteTaskById is called, then it should throw TaskNotFoundException")
     public void givenInvalidTaskId_whenDeleteTaskById_thenThrowTaskNotFoundException() {
         // given
-        taskRepository.saveAll(TaskTestData.mockTaskEntityList());
+        taskRepository.saveAll(TaskTestData.mockTaskEntityList(testUser));
         Long taskId = 999L;
 
         // when

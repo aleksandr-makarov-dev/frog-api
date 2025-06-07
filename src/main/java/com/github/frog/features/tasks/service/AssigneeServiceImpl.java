@@ -10,6 +10,7 @@ import com.github.frog.features.users.entity.UserEntity;
 import com.github.frog.features.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class AssigneeServiceImpl implements AssigneeService {
 
     private final AssigneeMapper assigneeMapper;
 
+    @Transactional
     @Override
     public AssigneeResponse addAssignee(Long taskId, Long userId) {
         TaskEntity task = taskService.getTaskEntityByIdOrThrow(taskId);
@@ -32,6 +34,7 @@ public class AssigneeServiceImpl implements AssigneeService {
         return assigneeMapper.toAssigneeResponse(assigneeRepository.save(assignee));
     }
 
+    @Transactional
     @Override
     public void removeAssignee(Long taskId, Long userId) {
         AssigneeEntity assignee = assigneeRepository.findByTaskIdAndUserId(taskId, userId)

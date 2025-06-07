@@ -1,8 +1,8 @@
 package com.github.frog.features.tasks.service;
 
 import com.github.frog.features.tasks.TaskTestData;
-import com.github.frog.features.tasks.dto.AssigneeAddRequest;
 import com.github.frog.features.tasks.dto.AssigneeResponse;
+import com.github.frog.features.tasks.entity.AssigneeEntity;
 import com.github.frog.features.tasks.entity.TaskEntity;
 import com.github.frog.features.tasks.exception.TaskNotFoundException;
 import com.github.frog.features.tasks.repository.AssigneeRepository;
@@ -15,6 +15,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -48,6 +49,8 @@ class AssigneeServiceIntegrationTest {
     @Autowired
     private AssigneeService assigneeService;
 
+    private UserEntity testUser;
+
     @BeforeAll
     static void beforeAll() {
         postgreSQLContainer.start();
@@ -61,36 +64,34 @@ class AssigneeServiceIntegrationTest {
     @BeforeEach
     void beforeEach() {
         assigneeRepository.deleteAll();
-        taskRepository.deleteAll();
         userRepository.deleteAll();
+        taskRepository.deleteAll();
+
+        testUser = userRepository.save(UserTestData.mockUserEntity());
     }
 
     @Test
     @DisplayName("Given valid task id and user id, when addAssignee is called, then return AssigneeResponse")
     public void givenValidTaskIdAndUserId_whenAddAssignee_thenReturnAssigneeResponse() {
         // given
-        TaskEntity task = TaskTestData.mockTaskEntity();
-        UserEntity user = UserTestData.mockUserEntity();
+        TaskEntity task = TaskTestData.mockTaskEntity(testUser);
         taskRepository.save(task);
-        userRepository.save(user);
 
         // when
-        AssigneeResponse response = assigneeService.addAssignee(task.getId(), user.getId());
+        AssigneeResponse response = assigneeService.addAssignee(task.getId(), testUser.getId());
 
         // then
         assertThat(response).isNotNull();
         assertThat(response.taskId()).isEqualTo(task.getId());
-        assertThat(response.userId()).isEqualTo(user.getId());
+        assertThat(response.userId()).isEqualTo(testUser.getId());
     }
 
     @Test
     @DisplayName("Given valid task id and invalid user id, when addAssignee is called, then throw UserNotFoundException")
     public void givenValidTaskIdAndInvalidUserId_whenAddAssignee_thenThrowUserNotFoundException() {
         // given
-        TaskEntity task = TaskTestData.mockTaskEntity();
-        UserEntity user = UserTestData.mockUserEntity();
+        TaskEntity task = TaskTestData.mockTaskEntity(testUser);
         taskRepository.save(task);
-        userRepository.save(user);
 
         Long invalidUserId = 999L;
 
@@ -107,37 +108,53 @@ class AssigneeServiceIntegrationTest {
     @DisplayName("Given invalid task id and valid user id, when addAssignee is called, then throw TaskNotFoundException")
     public void givenInvalidTaskIdAndValidUserId_whenAddAssignee_thenThrowTaskNotFoundException() {
         // given
-        TaskEntity task = TaskTestData.mockTaskEntity();
-        UserEntity user = UserTestData.mockUserEntity();
+        TaskEntity task = TaskTestData.mockTaskEntity(testUser);
         taskRepository.save(task);
-        userRepository.save(user);
 
         Long invalidTaskId = 999L;
 
         // when
-        assertThatThrownBy(() -> assigneeService.addAssignee(invalidTaskId, user.getId()))
+        assertThatThrownBy(() -> assigneeService.addAssignee(invalidTaskId, testUser.getId()))
                 .isInstanceOf(TaskNotFoundException.class)
                 .hasMessageContaining("Task with ID=%d not found".formatted(invalidTaskId));
 
         // then
-        assertThat(assigneeRepository.findByTaskIdAndUserId(invalidTaskId, user.getId())).isEmpty();
+        assertThat(assigneeRepository.findByTaskIdAndUserId(invalidTaskId, testUser.getId())).isEmpty();
     }
 
     @Test
     @DisplayName("Given valid task id and user id, when remove assignee, then not throw AssigneeNotFoundException")
     public void givenValidTaskIdAndUserId_whenRemoveAssignee_thenNotThrowAssigneeNotFoundException() {
         // given
-        TaskEntity task = TaskTestData.mockTaskEntity();
-        UserEntity user = UserTestData.mockUserEntity();
+        TaskEntity task = TaskTestData.mockTaskEntity(testUser);
         taskRepository.save(task);
-        userRepository.save(user);
+
+        AssigneeEntity assignee = TaskTestData.mockAssigneeEntity(task, testUser);
+        assigneeRepository.save(assignee);
 
         // when
-        assertThatNoException().isThrownBy(() -> assigneeService.removeAssignee(task.getId(), user.getId()));
+        assertThatNoException().isThrownBy(() -> assigneeService.removeAssignee(task.getId(), testUser.getId()));
 
         // then
-        assertThat(assigneeRepository.findByTaskIdAndUserId(task.getId(), user.getId())).isEmpty();
+        assertThat(assigneeRepository.findByTaskIdAndUserId(task.getId(), testUser.getId())).isEmpty();
     }
 
+    @Test
+    @DisplayName("Given duplication of task id and user id, when add assignee, then throw exception")
+    public void givenDuplicationTaskIdAndUserId_whenAddAssignee_thenThrowException() {
+        // given
 
+        TaskEntity task = TaskTestData.mockTaskEntity(testUser);
+        taskRepository.save(task);
+
+        AssigneeEntity assignee = TaskTestData.mockAssigneeEntity(task, testUser);
+        assigneeRepository.save(assignee);
+
+        // when
+
+        assertThatThrownBy(() -> assigneeService.addAssignee(task.getId(), testUser.getId()))
+                .isInstanceOf(DataIntegrityViolationException.class);
+
+        // then
+    }
 }

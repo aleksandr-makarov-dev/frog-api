@@ -8,6 +8,8 @@ import com.github.frog.features.tasks.entity.TaskEntity;
 import com.github.frog.features.tasks.exception.TaskNotFoundException;
 import com.github.frog.features.tasks.mapper.TaskMapper;
 import com.github.frog.features.tasks.repository.TaskRepository;
+import com.github.frog.features.users.entity.UserEntity;
+import com.github.frog.features.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +21,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
+    private final UserService userService;
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
 
     @Transactional
     @Override
     public TaskDetailsResponse createTask(TaskCreateRequest request) {
+
+        UserEntity user = userService.getUserEntityByIdOrThrow(request.createdById());
+
         TaskEntity taskEntity = taskMapper.toTaskEntity(request);
+        user.addTask(taskEntity);
+
         return taskMapper.toDetailsResponse(taskRepository.save(taskEntity));
     }
 

@@ -2,6 +2,7 @@ package com.github.frog.features.users.entity;
 
 import com.github.frog.entity.BaseEntity;
 import com.github.frog.features.tasks.entity.AssigneeEntity;
+import com.github.frog.features.tasks.entity.TaskEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,4 +40,18 @@ public class UserEntity extends BaseEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
     private List<AssigneeEntity> assignees = new ArrayList<>();
+
+    @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<TaskEntity> tasks = new ArrayList<>();
+
+    public void addTask(TaskEntity entity) {
+        tasks.add(entity);
+        entity.setCreatedBy(this);
+    }
+
+    public void addAssignee(AssigneeEntity entity) {
+        assignees.add(entity);
+        entity.setUser(this);
+    }
 }

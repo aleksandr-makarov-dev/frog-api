@@ -1,5 +1,6 @@
 package com.github.frog.features.tasks.service;
 
+import com.github.frog.features.tasks.TaskTestData;
 import com.github.frog.features.tasks.dto.TaskCreateRequest;
 import com.github.frog.features.tasks.dto.TaskDetailsResponse;
 import com.github.frog.features.tasks.entity.TaskEntity;
@@ -7,6 +8,10 @@ import com.github.frog.features.tasks.entity.TaskPriority;
 import com.github.frog.features.tasks.mapper.TaskMapper;
 import com.github.frog.features.tasks.repository.TaskRepository;
 import com.github.frog.features.tasks.service.TaskServiceImpl;
+import com.github.frog.features.users.UserTestData;
+import com.github.frog.features.users.entity.UserEntity;
+import com.github.frog.features.users.repository.UserRepository;
+import com.github.frog.features.users.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +34,9 @@ class TaskServiceTest {
     @Mock
     private TaskMapper taskMapper;
 
+    @Mock
+    private UserService userService;
+
     @InjectMocks
     private TaskServiceImpl taskService;
 
@@ -36,11 +44,11 @@ class TaskServiceTest {
     @DisplayName("Given a valid task creation request, when createTask is called, then it should return the created task details")
     public void givenValidTaskCreateRequest_whenCreateTask_thenReturnTaskDetailsResponse() {
         // given
-        TaskCreateRequest request = new TaskCreateRequest(
-                "test task",
-                "test task description",
-                TaskPriority.LOW,
-                LocalDateTime.of(2025, 6, 7, 10, 25));
+
+        UserEntity user = UserTestData.mockUserEntity();
+        user.setId(1L);
+
+        TaskCreateRequest request = TaskTestData.mockTaskCreateRequest(user.getId());
 
         TaskEntity task = TaskEntity.builder()
                 .name(request.name())
@@ -62,6 +70,7 @@ class TaskServiceTest {
         BDDMockito.given(taskMapper.toTaskEntity(Mockito.any(TaskCreateRequest.class))).willReturn(task);
         BDDMockito.given(taskRepository.save(Mockito.any(TaskEntity.class))).willReturn(task);
         BDDMockito.given(taskMapper.toDetailsResponse(Mockito.any(TaskEntity.class))).willReturn(response);
+        BDDMockito.given(userService.getUserEntityByIdOrThrow(Mockito.anyLong())).willReturn(user);
 
         // when
         TaskDetailsResponse taskDetailsResponse = taskService.createTask(request);

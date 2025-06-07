@@ -2,34 +2,71 @@ package com.github.frog.features.tasks;
 
 import com.github.frog.features.tasks.dto.TaskCreateRequest;
 import com.github.frog.features.tasks.dto.TaskUpdateRequest;
+import com.github.frog.features.tasks.entity.AssigneeEntity;
 import com.github.frog.features.tasks.entity.TaskEntity;
 import com.github.frog.features.tasks.entity.TaskPriority;
+import com.github.frog.features.users.entity.UserEntity;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.time.Month;
 import java.util.List;
 
 public class TaskTestData {
 
-    public static List<TaskEntity> mockTaskEntityList() {
+    public static List<TaskEntity> mockTaskEntityList(UserEntity createdBy) {
         return List.of(
-                new TaskEntity("task 1", "task 1 description", LocalDateTime.now(), LocalDateTime.of(2025, 6, 7, 12, 45), TaskPriority.LOW, Collections.emptyList()),
-                new TaskEntity("task 2", "task 2 description", LocalDateTime.now(), LocalDateTime.of(2025, 6, 8, 13, 45), TaskPriority.LOW, Collections.emptyList()),
-                new TaskEntity("task 3", "task 3 description", LocalDateTime.now(), null, TaskPriority.LOW, Collections.emptyList()),
-                new TaskEntity("task 4", "task 4 description", LocalDateTime.now(), LocalDateTime.of(2025, 6, 10, 16, 30), TaskPriority.LOW, Collections.emptyList())
+                TaskEntity.builder()
+                        .name("task 1")
+                        .description("task 1 description")
+                        .priority(TaskPriority.MEDIUM)
+                        .createdBy(createdBy)
+                        .createdAt(LocalDateTime.now())
+                        .dueDate(LocalDateTime.of(2019, Month.APRIL, 2, 17, 0))
+                        .build(),
+                TaskEntity.builder()
+                        .name("task 2")
+                        .description("task 2 description")
+                        .priority(TaskPriority.LOW)
+                        .createdBy(createdBy)
+                        .createdAt(LocalDateTime.now())
+                        .dueDate(LocalDateTime.of(2025, Month.DECEMBER, 2, 17, 0))
+                        .build(),
+                TaskEntity.builder()
+                        .name("task 3")
+                        .description("task 3 description")
+                        .priority(TaskPriority.HIGH)
+                        .createdBy(createdBy)
+                        .createdAt(LocalDateTime.now())
+                        .dueDate(LocalDateTime.of(2019, Month.APRIL, 2, 17, 0))
+                        .build(),
+                TaskEntity.builder()
+                        .name("task 4")
+                        .description("task 4 description")
+                        .priority(TaskPriority.CRITICAL)
+                        .createdBy(createdBy)
+                        .createdAt(LocalDateTime.now())
+                        .dueDate(LocalDateTime.of(2019, Month.APRIL, 2, 17, 0))
+                        .build()
         );
     }
 
-    public static TaskEntity mockTaskEntity() {
-        return new TaskEntity("task 1", "task 1 description", LocalDateTime.now(), LocalDateTime.of(2025, 6, 7, 12, 45), TaskPriority.LOW, Collections.emptyList());
+    public static TaskEntity mockTaskEntity(UserEntity createdBy) {
+        return TaskEntity.builder()
+                .name("task 1")
+                .description("task 1 description")
+                .createdBy(createdBy)
+                .priority(TaskPriority.LOW)
+                .createdAt(LocalDateTime.of(2025, 6, 7, 12, 45))
+                .build();
     }
 
-    public static TaskCreateRequest mockTaskCreateRequest() {
+    public static TaskCreateRequest mockTaskCreateRequest(Long createdById) {
         return new TaskCreateRequest(
                 "test task name",
                 "test task description",
                 TaskPriority.MEDIUM,
-                LocalDateTime.of(2025, 6, 7, 12, 45));
+                LocalDateTime.of(2025, 6, 7, 12, 45),
+                createdById);
     }
 
     public static TaskUpdateRequest mockTaskUpdateRequest() {
@@ -41,4 +78,12 @@ public class TaskTestData {
         );
     }
 
+    public static AssigneeEntity mockAssigneeEntity(TaskEntity task, UserEntity user) {
+        AssigneeEntity assignee = new AssigneeEntity();
+        assignee.setAssignedAt(LocalDateTime.now());
+        task.addAssignee(assignee);
+        user.addAssignee(assignee);
+
+        return assignee;
+    }
 }

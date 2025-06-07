@@ -8,6 +8,7 @@ import com.github.frog.features.users.mapper.UserMapper;
 import com.github.frog.features.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -18,6 +19,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    @Transactional
     @Override
     public UserRegisterResponse registerUser(UserRegisterRequest request) {
         Optional<UserEntity> existingUser = userRepository.findByEmail(request.email());

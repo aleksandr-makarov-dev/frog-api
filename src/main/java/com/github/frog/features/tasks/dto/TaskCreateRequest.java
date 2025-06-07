@@ -20,7 +20,10 @@ public record TaskCreateRequest(
         TaskPriority priority,
 
         @FutureOrPresent(message = "Due date must be in the present or future")
-        LocalDateTime dueDate
+        LocalDateTime dueDate,
+
+        @NotNull(message = "CreatedBy is required")
+        Long createdById
 ) {
 }
 
