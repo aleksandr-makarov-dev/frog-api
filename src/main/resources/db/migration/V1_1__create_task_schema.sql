@@ -6,5 +6,7 @@ create table if not exists tasks
     created_at  timestamp without time zone not null,
     due_date    timestamp without time zone,
     priority    varchar(25)                 not null,
-    primary key (id)
+    created_by  bigint                      not null,
+    primary key (id),
+    constraint fk_user foreign key (created_by) references users (id)
 )

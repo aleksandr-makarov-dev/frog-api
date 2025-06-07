@@ -4,6 +4,16 @@ spring:
   jpa:
     show-sql: true
   datasource:
-    url: ${DATASOURCE_URL}
-    username: ${DATASOURCE_USERNAME}
-    password: ${DATASOURCE_PASSWORD}
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/frog}
+    username: ${DATASOURCE_USERNAME:postgres}
+    password: ${DATASOURCE_PASSWORD:postgres}
+  minio:
+    bucket: ${MINIO_BUCKET:frog}
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    presigned-url-expiry-seconds: ${MINIO_URL_EXPIRE_TIME:3600}
+  servlet:
+    multipart:
+      max-request-size: 10MB
+      max-file-size: 10MB
