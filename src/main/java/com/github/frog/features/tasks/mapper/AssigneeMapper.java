@@ -22,8 +22,7 @@ public class AssigneeMapper {
 
     public AssigneeResponse toAssigneeResponse(AssigneeEntity entity) {
         return new AssigneeResponse(
-                entity.getTask().getId(),
-                entity.getUser().getId(),
+                entity.getId(),
                 entity.getAssignedAt());
     }
 }

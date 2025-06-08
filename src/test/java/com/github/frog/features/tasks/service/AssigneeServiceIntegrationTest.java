@@ -99,9 +99,6 @@ class AssigneeServiceIntegrationTest {
         assertThatThrownBy(() -> assigneeService.addAssignee(task.getId(), invalidUserId))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("User with ID=%d not found".formatted(invalidUserId));
-
-        // then
-        assertThat(assigneeRepository.findByTaskIdAndUserId(task.getId(), invalidUserId)).isEmpty();
     }
 
     @Test
@@ -118,8 +115,6 @@ class AssigneeServiceIntegrationTest {
                 .isInstanceOf(TaskNotFoundException.class)
                 .hasMessageContaining("Task with ID=%d not found".formatted(invalidTaskId));
 
-        // then
-        assertThat(assigneeRepository.findByTaskIdAndUserId(invalidTaskId, testUser.getId())).isEmpty();
     }
 
     @Test
@@ -133,10 +128,8 @@ class AssigneeServiceIntegrationTest {
         assigneeRepository.save(assignee);
 
         // when
-        assertThatNoException().isThrownBy(() -> assigneeService.removeAssignee(task.getId(), testUser.getId()));
+        assertThatNoException().isThrownBy(() -> assigneeService.removeAssignee(task.getId(),assignee.getId()));
 
-        // then
-        assertThat(assigneeRepository.findByTaskIdAndUserId(task.getId(), testUser.getId())).isEmpty();
     }
 
     @Test

@@ -42,8 +42,17 @@ public class TaskEntity extends BaseEntity {
     @JoinColumn(name = "created_by", nullable = false, updatable = false)
     UserEntity createdBy;
 
+    @OneToMany(mappedBy = "task",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<AttachmentEntity> attachments = new ArrayList<>();
+
     public void addAssignee(AssigneeEntity entity) {
         assignees.add(entity);
+        entity.setTask(this);
+    }
+
+    public void addAttachment(AttachmentEntity entity) {
+        attachments.add(entity);
         entity.setTask(this);
     }
 }

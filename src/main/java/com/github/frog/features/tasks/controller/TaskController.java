@@ -2,6 +2,7 @@ package com.github.frog.features.tasks.controller;
 
 import com.github.frog.features.tasks.dto.*;
 import com.github.frog.features.tasks.service.AssigneeService;
+import com.github.frog.features.tasks.service.AttachmentService;
 import com.github.frog.features.tasks.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class TaskController {
 
     private final TaskService taskService;
     private final AssigneeService assigneeService;
+    private final AttachmentService attachmentService;
 
     @PostMapping
     public ResponseEntity<TaskDetailsResponse> createTask(@RequestBody @Valid TaskCreateRequest request) {
@@ -53,6 +55,17 @@ public class TaskController {
     @DeleteMapping("{taskId}/assignees/{assigneeId}")
     public ResponseEntity<?> removeAssignee(@PathVariable("taskId") Long taskId, @PathVariable("assigneeId") Long assigneeId) {
         assigneeService.removeAssignee(taskId, assigneeId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("{taskId}/attachments")
+    public ResponseEntity<AttachmentResponse> addAttachment(@PathVariable("taskId") Long taskId, @RequestBody @Valid AttachmentAddRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(attachmentService.addAttachment(taskId, request.resourceId()));
+    }
+
+    @DeleteMapping("{taskId}/attachments/{attachmentId}")
+    public ResponseEntity<?> removeAttachment(@PathVariable("taskId") Long taskId, @PathVariable("attachmentId") Long attachmentId) {
+        attachmentService.removeAttachment(taskId, attachmentId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

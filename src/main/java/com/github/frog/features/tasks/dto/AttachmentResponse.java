@@ -2,8 +2,8 @@ package com.github.frog.features.tasks.dto;
 
 import java.time.LocalDateTime;
 
-public record AssigneeResponse(
+public record AttachmentResponse(
         Long id,
-        LocalDateTime assignedAt
+        LocalDateTime attachedAt
 ) {
 }

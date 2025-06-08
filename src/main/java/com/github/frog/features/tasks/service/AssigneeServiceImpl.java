@@ -36,9 +36,14 @@ public class AssigneeServiceImpl implements AssigneeService {
 
     @Transactional
     @Override
-    public void removeAssignee(Long taskId, Long userId) {
-        AssigneeEntity assignee = assigneeRepository.findByTaskIdAndUserId(taskId, userId)
-                .orElseThrow(() -> new AssigneeNotFoundException("User with ID=%d is not assigned to Task with ID=%d".formatted(userId, taskId)));
+    public void removeAssignee(Long taskId, Long assigneeId) {
+        AssigneeEntity assignee = assigneeRepository.findWithTaskById(assigneeId)
+                .orElseThrow(() -> new AssigneeNotFoundException("Assignee with ID=%d not found".formatted(assigneeId)));
+
+        if (!assignee.getTask().getId().equals(taskId)) {
+            throw new AssigneeNotFoundException("Assignment with ID=%d doesn't belong to task with ID=%d".formatted(assigneeId, taskId));
+        }
+
         assigneeRepository.delete(assignee);
     }
 }
